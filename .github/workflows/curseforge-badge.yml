@@ -54,7 +54,7 @@ jobs:
           
           badge = {
               "schemaVersion": 1,
-              "label": "Curseforge Downloads"
+              "label": "Curseforge Downloads",
               "message": message + " downloads",
               "color": "brightgreen",
               "namedLogo": "curseforge"
