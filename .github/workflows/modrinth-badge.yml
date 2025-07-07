@@ -54,7 +54,7 @@ jobs:
           badge = {
               "schemaVersion": 1,
               "label": "Modrinth Downloads",
-              "message": message,
+              "message": message + " downloads",
               "color": "brightgreen",
               "namedLogo": "modrinth"
           }
