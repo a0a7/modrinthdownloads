@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: '0 * * * *'  # Every hour
   workflow_dispatch:      # Allow manual trigger
+  
+permissions:
+  contents: write
 
 jobs:
   update-badge:
@@ -54,8 +57,6 @@ jobs:
           EOF
 
       - name: Commit and push badge
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
