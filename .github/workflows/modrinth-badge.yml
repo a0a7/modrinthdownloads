@@ -61,4 +61,4 @@ jobs:
           git config user.email "github-actions@github.com"
           git add modrinth-downloads.json
           git commit -m "Update Modrinth download badge" || echo "No changes to commit"
-          git push https://x-access-token:${GH_TOKEN}@github.com/a0a7/modrinthdownloads.git HEAD:main
+          git push origin main
