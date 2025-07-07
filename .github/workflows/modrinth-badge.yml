@@ -29,29 +29,36 @@ jobs:
           python <<EOF
           import requests
           import json
-
+          
           project_ids = [
               "bellsandwhistles",
               "interiors",
               "dynamic-village"
           ]
-
+          
           total_downloads = 0
-
+          
           for project in project_ids:
               r = requests.get(f"https://api.modrinth.com/v2/project/{project}")
               r.raise_for_status()
               data = r.json()
               total_downloads += data.get("downloads", 0)
-
+          
+          if total_downloads >= 1_000_000:
+              message = f"{total_downloads / 1_000_000:.1f}M"
+          elif total_downloads >= 1_000:
+              message = f"{total_downloads / 1_000:.1f}k"
+          else:
+              message = str(total_downloads)
+          
           badge = {
               "schemaVersion": 1,
               "label": "Modrinth Downloads",
-              "message": f"{total_downloads / 1000:.1f}k",
+              "message": message,
               "color": "brightgreen",
-              "logo": "modrinth"
+              "namedLogo": "modrinth"
           }
-
+          
           with open("modrinth-downloads.json", "w") as f:
               json.dump(badge, f, indent=2)
           EOF
