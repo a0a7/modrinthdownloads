@@ -2,7 +2,7 @@ name: Update Curseforge Downloads Badge
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Every hour
+    - cron: '30 * * * *'  # Every hour
   workflow_dispatch:      # Allow manual trigger
   
 permissions:
@@ -54,8 +54,7 @@ jobs:
           
           badge = {
               "schemaVersion": 1,
-              "label": "Curseforge Downloads",
-              "message": message,
+              "message": message + " downloads",
               "color": "brightgreen",
               "namedLogo": "curseforge"
           }
