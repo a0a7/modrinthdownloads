@@ -1,0 +1,73 @@
+name: Update Curseforge Downloads Badge
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Every hour
+  workflow_dispatch:      # Allow manual trigger
+  
+permissions:
+  contents: write
+
+jobs:
+  update-badge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Generate badge JSON
+        run: |
+          python <<EOF
+          import requests
+          import json
+          
+          project_ids = [
+              "906239",
+              "905040",
+              "919759",
+              "1076408"
+          ]
+          
+          total_downloads = 0
+          
+          for project in project_ids:
+              r = requests.get(f"https://api.cfwidget.com/minecraft/mc-mods/{project}/download")
+              r.raise_for_status()
+              data = r.json()
+              total_downloads += data.get("downloads", 0).get("total", 0)
+          
+          if total_downloads >= 1_000_000:
+              message = f"{total_downloads / 1_000_000:.1f}M"
+          elif total_downloads >= 1_000:
+              message = f"{total_downloads / 1_000:.1f}k"
+          else:
+              message = str(total_downloads)
+          
+          badge = {
+              "schemaVersion": 1,
+              "label": "Curseforge Downloads",
+              "message": message,
+              "color": "brightgreen",
+              "namedLogo": "curseforge"
+          }
+          
+          with open("curseforge-downloads.json", "w") as f:
+              json.dump(badge, f, indent=2)
+          EOF
+
+      - name: Commit and push badge
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add curseforge-downloads.json
+          git commit -m "Update Curseforge download badge" || echo "No changes to commit"
+          git push origin main
