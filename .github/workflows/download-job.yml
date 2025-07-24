@@ -1,0 +1,44 @@
+name: Download Job
+
+on:
+  schedule:
+    # Every 10 minutes during 6:20am-23:10 Eastern (11:20-04:10 UTC)
+    - cron: '20-59/10 11-23 * * *'  # 11:20-23:59 UTC every 10 minutes
+    - cron: '0-10/10 0-4 * * *'     # 00:00-04:10 UTC every 10 minutes
+    # Every 15 minutes otherwise (23:10-06:20 Eastern = 04:10-11:20 UTC)
+    - cron: '10-59/15 4-10 * * *'   # 04:10-10:59 UTC every 15 minutes
+    - cron: '0-20/15 11 * * *'      # 11:00-11:20 UTC every 15 minutes
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Set up Docker
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Set up Rust
+      uses: dtolnay/rust-toolchain@stable
+    
+    - name: Install Python dependencies
+      run: |
+        pip install requests huggingface_hub
+    
+    - name: Run download script
+      run: python download_script.py
+      env:
+        HUGGINGFACE_HUB_TOKEN: ${{ secrets.HUGGINGFACE_HUB_TOKEN }}
