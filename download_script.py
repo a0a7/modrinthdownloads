@@ -206,12 +206,12 @@ def main():
     # 3. 85% chance to download npm package (with preference check)
     if random.random() < 0.85:
         log_message("Task 3: npm package download (85% chance - triggered)")
-        if check_npm_package_exists("fast-line-heatmap"):
-            log_message("fast-line-heatmap exists, downloading it instead")
-            success = download_npm_package("fast-line-heatmap")
-            results.append(("npm package fast-line-heatmap", success))
+        if check_npm_package_exists("fastgeotoolkit"):
+            log_message("fastgeotoolkit exists, downloading it instead")
+            success = download_npm_package("fastgeotoolkit")
+            results.append(("npm package fastgeotoolkit", success))
         else:
-            log_message("fast-line-heatmap doesn't exist, downloading heatmap-parse")
+            log_message("fastgeotoolkit doesn't exist, downloading heatmap-parse")
             success = download_npm_package("heatmap-parse")
             results.append(("npm package heatmap-parse", success))
     else:
@@ -221,12 +221,12 @@ def main():
     # 4. 95% chance to download crates package (with preference check)
     if random.random() < 0.95:
         log_message("Task 4: crates package download (95% chance - triggered)")
-        if check_crates_package_exists("fast-line-heatmap"):
-            log_message("fast-line-heatmap crate exists, downloading it instead")
-            success = download_crates_package("fast-line-heatmap")
-            results.append(("crates package fast-line-heatmap", success))
+        if check_crates_package_exists("fastgeotoolkit"):
+            log_message("fastgeotoolkit crate exists, downloading it instead")
+            success = download_crates_package("fastgeotoolkit")
+            results.append(("crates package fastgeotoolkit", success))
         else:
-            log_message("fast-line-heatmap crate doesn't exist, downloading heatmap-parse")
+            log_message("fastgeotoolkit crate doesn't exist, downloading heatmap-parse")
             success = download_crates_package("heatmap-parse")
             results.append(("crates package heatmap-parse", success))
     else:
