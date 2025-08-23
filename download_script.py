@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 Download script that handles various downloads based on probability.
+Week-dependent variant: download probabilities are slightly adjusted per week.
 """
 
 import random
@@ -245,12 +246,30 @@ def download_github_container_image(pkg_url):
         log_message(f"Failed to download GitHub container image from {pkg_url}: {e}")
         return False
 
+def week_probability_adjustment(week_num):
+    """Return a multiplier for probabilities based on the week number."""
+    # Use a simple deterministic function: sine wave with some noise
+    import math
+    # Centered around 1, e.g. from 0.8 to 1.25
+    base = 1.0 + 0.15 * math.sin(week_num / 2.0)  # smooth variant week-to-week
+    # Add a small deterministic "jitter" per week (repeatable)
+    random.seed(week_num ^ 0xA0A7)
+    jitter = random.uniform(-0.05, 0.07)
+    adj = base + jitter
+    # Clamp to [0.7, 1.35] to avoid extremes
+    return max(0.7, min(1.35, adj))
+
 def main():
     """Main function that executes the download logic."""
     log_message("Starting download job")
     
+    now = datetime.now()
+    week_num = now.isocalendar()[1]
+    prob_adj = week_probability_adjustment(week_num)
+    log_message(f"Week number: {week_num}, probability adjustment multiplier: {prob_adj:.3f}")
+    
     # Set random seed for reproducibility within the same minute
-    random.seed(int(datetime.now().timestamp() / 60))
+    random.seed(int(now.timestamp() / 60))
     
     results = []
     now_ts = int(time.time())
@@ -261,18 +280,18 @@ def main():
     success = download_huggingface_dataset("a0a7/Gregg-1916")
     results.append(("HuggingFace dataset a0a7/Gregg-1916", success))
     
-    # 2. 30% chance to download HuggingFace model
-    if random.random() < 0.30:
-        log_message("Task 2: Downloading HuggingFace model (30% chance - triggered)")
+    # 2. 30% chance to download HuggingFace model (week-dependent)
+    if random.random() < 0.30 * prob_adj:
+        log_message("Task 2: Downloading HuggingFace model (probability adjusted)")
         success = download_huggingface_model("a0a7/gregg-recognition")
         results.append(("HuggingFace model a0a7/gregg-recognition", success))
     else:
-        log_message("Task 2: Skipping HuggingFace model download (30% chance - not triggered)")
+        log_message("Task 2: Skipping HuggingFace model download (probability adjusted)")
         results.append(("HuggingFace model a0a7/gregg-recognition", "skipped"))
     
-    # 3. 85% chance to download npm package (with preference check)
-    if random.random() < 0.85:
-        log_message("Task 3: npm package download (85% chance - triggered)")
+    # 3. 85% chance to download npm package (week-dependent)
+    if random.random() < 0.85 * prob_adj:
+        log_message("Task 3: npm package download (probability adjusted)")
         if check_npm_package_exists("fastgeotoolkit"):
             log_message("fastgeotoolkit exists, downloading it instead")
             success = download_npm_package("fastgeotoolkit")
@@ -282,12 +301,12 @@ def main():
             success = download_npm_package("heatmap-parse")
             results.append(("npm package heatmap-parse", success))
     else:
-        log_message("Task 3: Skipping npm package download (85% chance - not triggered)")
+        log_message("Task 3: Skipping npm package download (probability adjusted)")
         results.append(("npm package", "skipped"))
     
-    # 4. 95% chance to download crates package (with preference check)
-    if random.random() < 0.95:
-        log_message("Task 4: crates package download (95% chance - triggered)")
+    # 4. 95% chance to download crates package (week-dependent)
+    if random.random() < 0.95 * prob_adj:
+        log_message("Task 4: crates package download (probability adjusted)")
         if check_crates_package_exists("fastgeotoolkit"):
             log_message("fastgeotoolkit crate exists, downloading it instead")
             success = download_crates_package("fastgeotoolkit")
@@ -297,54 +316,54 @@ def main():
             success = download_crates_package("heatmap-parse")
             results.append(("crates package heatmap-parse", success))
     else:
-        log_message("Task 4: Skipping crates package download (95% chance - not triggered)")
+        log_message("Task 4: Skipping crates package download (probability adjusted)")
         results.append(("crates package", "skipped"))
     
-    # 5. 40% chance to download Docker image
-    if random.random() < 0.40:
-        log_message("Task 5: Downloading Docker image (40% chance - triggered)")
+    # 5. 40% chance to download Docker image (week-dependent)
+    if random.random() < 0.40 * prob_adj:
+        log_message("Task 5: Downloading Docker image (probability adjusted)")
         success = download_docker_image("a0a7/publicbroadcastarr")
         results.append(("Docker image a0a7/publicbroadcastarr", success))
     else:
-        log_message("Task 5: Skipping Docker image download (40% chance - not triggered)")
+        log_message("Task 5: Skipping Docker image download (probability adjusted)")
         results.append(("Docker image a0a7/publicbroadcastarr", "skipped"))
 
     # --- NEW LOGIC for GitHub Packages (until Nov 5, 2025) ---
     if now_ts <= cutoff_ts:
-        # 80% chance: download/install fastgeotoolkit from GitHub npm
-        if random.random() < 0.80:
-            log_message("Extra Task: Downloading GitHub npm fastgeotoolkit (80% chance - triggered)")
+        # 80% chance: download/install fastgeotoolkit from GitHub npm (week-dependent)
+        if random.random() < 0.80 * prob_adj:
+            log_message("Extra Task: Downloading GitHub npm fastgeotoolkit (probability adjusted)")
             success = download_github_npm_package("https://github.com/a0a7/fastgeotoolkit/pkgs/npm/fastgeotoolkit")
             results.append(("GitHub npm package @a0a7/fastgeotoolkit", success))
         else:
-            log_message("Extra Task: Skipping GitHub npm fastgeotoolkit (80% chance - not triggered)")
+            log_message("Extra Task: Skipping GitHub npm fastgeotoolkit (probability adjusted)")
             results.append(("GitHub npm package @a0a7/fastgeotoolkit", "skipped"))
 
-        # 70% chance: download/pull publicbroadcastarr from GitHub container registry
-        if random.random() < 0.70:
-            log_message("Extra Task: Downloading GitHub container publicbroadcastarr (70% chance - triggered)")
+        # 70% chance: download/pull publicbroadcastarr from GitHub container registry (week-dependent)
+        if random.random() < 0.70 * prob_adj:
+            log_message("Extra Task: Downloading GitHub container publicbroadcastarr (probability adjusted)")
             success = download_github_container_image("https://github.com/a0a7/publicbroadcastarr/pkgs/container/publicbroadcastarr")
             results.append(("GitHub container image ghcr.io/a0a7/publicbroadcastarr", success))
         else:
-            log_message("Extra Task: Skipping GitHub container publicbroadcastarr (70% chance - not triggered)")
+            log_message("Extra Task: Skipping GitHub container publicbroadcastarr (probability adjusted)")
             results.append(("GitHub container image ghcr.io/a0a7/publicbroadcastarr", "skipped"))
 
-        # 20% chance: download/install heatmap-parse from GitHub npm
-        if random.random() < 0.20:
-            log_message("Extra Task: Downloading GitHub npm heatmap-parse (20% chance - triggered)")
+        # 20% chance: download/install heatmap-parse from GitHub npm (week-dependent)
+        if random.random() < 0.20 * prob_adj:
+            log_message("Extra Task: Downloading GitHub npm heatmap-parse (probability adjusted)")
             success = download_github_npm_package("https://github.com/a0a7/heatmap-parse/pkgs/npm/heatmap-parse")
             results.append(("GitHub npm package @a0a7/heatmap-parse", success))
         else:
-            log_message("Extra Task: Skipping GitHub npm heatmap-parse (20% chance - not triggered)")
+            log_message("Extra Task: Skipping GitHub npm heatmap-parse (probability adjusted)")
             results.append(("GitHub npm package @a0a7/heatmap-parse", "skipped"))
 
-        # 30% chance: download/pull svtplayarr from GitHub container registry
-        if random.random() < 0.30:
-            log_message("Extra Task: Downloading GitHub container svtplayarr (30% chance - triggered)")
+        # 30% chance: download/pull svtplayarr from GitHub container registry (week-dependent)
+        if random.random() < 0.30 * prob_adj:
+            log_message("Extra Task: Downloading GitHub container svtplayarr (probability adjusted)")
             success = download_github_container_image("https://github.com/a0a7/svtplayarr/pkgs/container/svtplayarr")
             results.append(("GitHub container image ghcr.io/a0a7/svtplayarr", success))
         else:
-            log_message("Extra Task: Skipping GitHub container svtplayarr (30% chance - not triggered)")
+            log_message("Extra Task: Skipping GitHub container svtplayarr (probability adjusted)")
             results.append(("GitHub container image ghcr.io/a0a7/svtplayarr", "skipped"))
 
     # Summary
